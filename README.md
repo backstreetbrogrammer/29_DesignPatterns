@@ -11,11 +11,11 @@ Tools used:
 
 ## Table of contents
 
-1. Introduction
-2. Creational Patterns
-    - Singleton
-    - Builder
-    - Factory
+1. [Introduction](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-01-introduction)
+2. [Creational Patterns](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-02-creational-patterns)
+    - [Singleton](https://github.com/backstreetbrogrammer/29_DesignPatterns#singleton)
+    - [Builder](https://github.com/backstreetbrogrammer/29_DesignPatterns#builder)
+    - [Factory](https://github.com/backstreetbrogrammer/29_DesignPatterns#factory)
 3. Structural Patterns
     - Decorator
     - Adaptor
@@ -180,4 +180,6 @@ This client code is easy to write and, more importantly, easy to read.
 
 The `Pizza` class is **immutable**, and all parameter default values are in one place. The builder’s setter methods
 return the builder itself so that invocations can be chained, resulting in a _fluent_ API.
+
+#### Factory
 
