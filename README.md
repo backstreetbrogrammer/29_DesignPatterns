@@ -183,3 +183,48 @@ return the builder itself so that invocations can be chained, resulting in a _fl
 
 #### Factory
 
+Defines an interface for creating an object, but lets subclasses decide which class to instantiate. Factory Method lets
+a class defer instantiation to subclasses.
+
+In other words, The factory design pattern lets us create objects **without exposing the instantiation logic** to the
+client.
+
+Suppose that we’re working for a bank that needs a way of creating different financial products: loans, bonds, stocks,
+and so on. Typically, we’d create a Factory class with a method that’s responsible for the creation of different
+objects, as shown here:
+
+```java
+public class ProductFactory {
+
+    public static Product createProduct(final String name) {
+        switch (name) {
+            case "loan":
+                return new Loan();
+            case "stock":
+                return new Stock();
+            case "bond":
+                return new Bond();
+            default:
+                throw new RuntimeException("No such product " + name);
+        }
+    }
+}
+```
+
+Here, `Loan`, `Stock`, and `Bond` are subtypes of `Product`. The `createProduct()` method could have additional logic to
+configure each created product. But the benefit is that we can create these objects without exposing the constructor and
+the configuration to the client, which makes the creation of products simpler for the client, as follows:
+
+```
+Product p = ProductFactory.createProduct("loan");
+```
+
+---
+
+### Chapter 03. Structural Patterns
+
+The Structural Patterns explain how to assemble objects and classes into larger structures, while keeping these
+structures flexible and efficient, e.g. Adapter and Decorator.
+
+#### Decorator
+
