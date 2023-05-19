@@ -16,14 +16,14 @@ Tools used:
     - [Singleton](https://github.com/backstreetbrogrammer/29_DesignPatterns#singleton)
     - [Builder](https://github.com/backstreetbrogrammer/29_DesignPatterns#builder)
     - [Factory](https://github.com/backstreetbrogrammer/29_DesignPatterns#factory)
-3. Structural Patterns
-    - Decorator
-    - Adaptor
-4. Behavioral Patterns
-    - Strategy
-    - Observer
-    - Template
-    - Chain of responsibility
+3. [Structural Patterns](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-03-structural-patterns)
+    - [Decorator](https://github.com/backstreetbrogrammer/29_DesignPatterns#decorator)
+    - [Adaptor](https://github.com/backstreetbrogrammer/29_DesignPatterns#adaptor)
+4. [Behavioral Patterns](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-04-behavioral-patterns)
+    - [Strategy](https://github.com/backstreetbrogrammer/29_DesignPatterns#strategy)
+    - [Observer](https://github.com/backstreetbrogrammer/29_DesignPatterns#observer)
+    - [Template](https://github.com/backstreetbrogrammer/29_DesignPatterns#template)
+    - [Chain of responsibility](https://github.com/backstreetbrogrammer/29_DesignPatterns#chain-of-responsibility)
 
 ---
 
@@ -228,3 +228,136 @@ structures flexible and efficient, e.g. Adapter and Decorator.
 
 #### Decorator
 
+A Decorator pattern can be used to attach additional responsibilities to an object either statically or dynamically.
+Decorators provide a flexible alternative to sub-classing for extending functionality.
+
+In the implementation of this pattern, we prefer **composition** over an **inheritance** – so that we can reduce the
+overhead of subclassing again and again for each decorating element.
+
+Suppose we have a `Pizza` object, and we want to decorate it. The decoration does not change the object itself; it's
+just that in addition to the `Pizza`, we're adding some decoration items like cheese, pepperoni, bacon, etc.
+
+```java
+public interface Pizza {
+    String decorate();
+}
+```
+
+The implementation of this interface will look like:
+
+```java
+public class PizzaImpl implements Pizza {
+    @Override
+    public String decorate() {
+        return "Yummy Pizza";
+    }
+}
+```
+
+We'll now create an **abstract** `PizzaDecorator` class for this pizza. This decorator will implement the `Pizza`
+interface as well as hold the same object. The implemented method from the same interface will simply call
+the `decorate()` method from our interface:
+
+```java
+public abstract class PizzaDecorator implements Pizza {
+    private Pizza pizza;
+
+    public PizzaDecorator(final Pizza pizza) {
+        this.pizza = pizza;
+    }
+
+    @Override
+    public String decorate() {
+        return pizza.decorate();
+    }
+}
+```
+
+We'll now create some decorating element. These decorators will extend our abstract `PizzaDecorator` class and will
+modify its `decorate()` method according to our requirement:
+
+```java
+public class Pepperoni extends PizzaDecorator {
+
+    public Pepperoni(final Pizza pizza) {
+        super(pizza);
+    }
+
+    public String decorate() {
+        return String.format("%s%s", super.decorate(), decorateWithPepperoni());
+    }
+
+    private String decorateWithPepperoni() {
+        return " with fresh pepperoni";
+    }
+
+}
+```
+
+Similarly, we can create decorators for cheese and bacon.
+
+```java
+public class Cheese extends PizzaDecorator {
+
+    public Cheese(final Pizza pizza) {
+        super(pizza);
+    }
+
+    public String decorate() {
+        return String.format("%s%s", super.decorate(), decorateWithCheese());
+    }
+
+    private String decorateWithCheese() {
+        return " with home made cheese";
+    }
+
+}
+```
+
+```java
+public class Bacon extends PizzaDecorator {
+
+    public Bacon(final Pizza pizza) {
+        super(pizza);
+    }
+
+    public String decorate() {
+        return String.format("%s%s", super.decorate(), decorateWithBacon());
+    }
+
+    private String decorateWithBacon() {
+        return " with super tasty bacon";
+    }
+
+}
+```
+
+Here is the main code to show decorator pattern.
+
+```
+        final Pizza pizza1 = new Pepperoni(new PizzaImpl());
+        assertEquals(pizza1.decorate(), "Yummy Pizza with fresh pepperoni");
+
+        final Pizza pizza2 = new Bacon(new Cheese(new Pepperoni(new PizzaImpl())));
+        assertEquals(pizza2.decorate(), "Yummy Pizza with fresh pepperoni with home made cheese with super tasty bacon");
+```
+
+Note that in the first `pizza1` object, we're only decorating it with `Pepperoni`, while for the other `pizza2` object
+we're decorating with `Bacon`, `Cheese` and `Pepperoni`. This pattern gives us this flexibility to add as many
+decorators as we want at runtime.
+
+#### Adaptor
+
+---
+
+### Chapter 04. Behavioral Patterns
+
+#### Strategy
+
+#### Observer
+
+#### Template
+
+#### Chain of responsibility
+
+---
