@@ -18,7 +18,7 @@ Tools used:
     - [Factory](https://github.com/backstreetbrogrammer/29_DesignPatterns#factory)
 3. [Structural Patterns](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-03-structural-patterns)
     - [Decorator](https://github.com/backstreetbrogrammer/29_DesignPatterns#decorator)
-    - [Adaptor](https://github.com/backstreetbrogrammer/29_DesignPatterns#adaptor)
+    - [Adapter](https://github.com/backstreetbrogrammer/29_DesignPatterns#adapter)
 4. [Behavioral Patterns](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-04-behavioral-patterns)
     - [Strategy](https://github.com/backstreetbrogrammer/29_DesignPatterns#strategy)
     - [Observer](https://github.com/backstreetbrogrammer/29_DesignPatterns#observer)
@@ -51,6 +51,8 @@ categorized by their intent and divided into three groups:
 - Ensures a class has only one instance
 - Provides a global access point to that instance
 - Java's implementation makes use of a private constructor, a static method combined with a static variable.
+
+![Singleton Pattern](Singleton.PNG)
 
 ```java
 public class Singleton {
@@ -346,13 +348,114 @@ Note that in the first `pizza1` object, we're only decorating it with `Pepperoni
 we're decorating with `Bacon`, `Cheese` and `Pepperoni`. This pattern gives us this flexibility to add as many
 decorators as we want at runtime.
 
-#### Adaptor
+#### Adapter
+
+An Adapter pattern acts as a connector between two incompatible interfaces that otherwise cannot be connected directly.
+
+The main goal for this pattern is to convert an existing interface into another one the client expects.
+
+`Enumeration` and `Iterator` are two related interfaces that are great examples of adapter-adaptee relationships.
+
+`Iterator` differ from `Enumeration` in two ways:
+
+- Iterators allow the caller to remove elements from the underlying collection during the iteration.
+- Method names have been improved.
+
+```java
+public interface Iterator<E> {
+
+    boolean hasNext();
+
+    E next();
+
+    default void remove() {
+        throw new UnsupportedOperationException("remove");
+    }
+
+    default void forEachRemaining(final Consumer<? super E> action) {
+        Objects.requireNonNull(action);
+        while (hasNext())
+            action.accept(next());
+    }
+
+}
+```
+
+```java
+public interface Enumeration<E> {
+
+    boolean hasMoreElements();
+
+    E nextElement();
+
+    // Adapter pattern using an anonymous class:
+    default Iterator<E> asIterator() {
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return hasMoreElements();
+            }
+
+            @Override
+            public E next() {
+                return nextElement();
+            }
+        };
+    }
+
+}
+```
 
 ---
 
 ### Chapter 04. Behavioral Patterns
 
+Behavioral design patterns are concerned with algorithms and the assignment of responsibilities between objects.
+
 #### Strategy
+
+The strategy pattern is a common solution for representing a family of algorithms and letting us choose among them at
+runtime. We can apply this pattern to a multitude of scenarios, such as validating an input with different criteria,
+using different ways of parsing, or formatting an input.
+
+![Strategy Pattern](Strategy.PNG)
+
+- An interface to represent some algorithm (the interface Strategy)
+- One or more concrete implementations of that interface to represent multiple algorithms (the concrete classes
+  ConcreteStrategyA, ConcreteStrategyB)
+- One or more clients that use the strategy objects
+
+Suppose we have to validate some strings.
+
+```java
+public interface ValidationStrategy {
+    boolean isValid(String s);
+}
+```
+
+```java
+public class Validator {
+    private final ValidationStrategy strategy;
+
+    public Validator(final ValidationStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public boolean isValid(final String s) {
+        return strategy.isValid(s);
+    }
+}
+```
+
+We can use different validation strategies in our program.
+
+```
+        final Validator numericValidator = new Validator((String s) -> s.matches("\\d+"));
+        assertFalse(numericValidator.isValid("aaaa"));
+
+        final Validator lowerCaseValidator = new Validator((String s) -> s.matches("[a-z]+"));
+        assertTrue(lowerCaseValidator.isValid("backstreetbrogrammer"));
+```
 
 #### Observer
 
@@ -360,4 +463,3 @@ decorators as we want at runtime.
 
 #### Chain of responsibility
 
----
