@@ -459,7 +459,119 @@ We can use different validation strategies in our program.
 
 #### Observer
 
+Defines a one-to-many dependency between objects so that when one object changes state, all of its dependents are
+notified and updated automatically.
+
+Observers are **loosely coupled** in that the **Observable** knows nothing about them, other than that they implement
+the **Observer** interface.
+
+![Observer](Observer.PNG)
+
+The observer design pattern is a common solution when an object (called the subject) needs to automatically notify a
+list of other objects (called observers) when some event happens (such as a state change).
+
+**Example code**
+
+`MarketDataObserver` has one method, called notify(), that will be called by the subject (`MarketDataFeed`) when a new
+market data tick is available:
+
+```java
+public interface MarketDataObserver {
+    void notify(String marketData);
+}
+```
+
+Various observers classes:
+
+```java
+public class AlgoEngine implements MarketDataObserver {
+    @Override
+    public void notify(final String marketData) {
+        // consume market data for algo trading
+        System.out.println("Consumed by AlgoEngine");
+    }
+}
+```
+
+```java
+public class RealTimeAnalytics implements MarketDataObserver {
+    @Override
+    public void notify(final String marketData) {
+        // real time analytics with market data
+        System.out.println("Consumed by RealTimeAnalytics");
+    }
+}
+```
+
+```java
+public class PlotData implements MarketDataObserver {
+    @Override
+    public void notify(final String marketData) {
+        // plot the data into UI
+        System.out.println("Consumed by PlotData for UI");
+    }
+}
+```
+
+Now we define subject for registering and notifying observers.
+
+```java
+public interface MarketDataSubject {
+    void registerObserver(MarketDataObserver marketDataObserver);
+
+    void notifyObservers(String marketData);
+}
+```
+
+This is the `MarketDataFeed` clas which implements the subject.
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class MarketDataFeed implements MarketDataSubject {
+    private final List<MarketDataObserver> observers = new ArrayList<>();
+
+    @Override
+    public void registerObserver(final MarketDataObserver marketDataObserver) {
+        observers.add(marketDataObserver);
+    }
+
+    @Override
+    public void notifyObservers(final String marketData) {
+        observers.forEach(o -> o.notify(marketData));
+    }
+}
+```
+
+In the main code or client code, this observer pattern is used whenever a new market data tick is received and all the
+observers are notified.
+
+```
+        final MarketDataFeed marketDataFeed = new MarketDataFeed();
+        marketDataFeed.registerObserver(new AlgoEngine());
+        marketDataFeed.registerObserver(new RealTimeAnalytics());
+        marketDataFeed.registerObserver(new PlotData());
+
+        final String mdTick = String.format("Stock=%s,open=%.2f,high=%.2f,low=%.2f,close=%.2f",
+                                            "AAPL", 97.23D, 100.5D, 95.76D, 99.65D);
+        System.out.printf("Market Data received: %s%n", mdTick);
+
+        marketDataFeed.notifyObservers(mdTick);
+```
+
+Output:
+
+```
+Market Data received: Stock=AAPL,open=97.23,high=100.50,low=95.76,close=99.65
+Consumed by AlgoEngine
+Consumed by RealTimeAnalytics
+Consumed by PlotData for UI
+```
+
 #### Template
+
+
 
 #### Chain of responsibility
 
