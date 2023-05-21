@@ -642,7 +642,41 @@ When it finishes its work, the processing object hands over its work to its succ
 We can create different kinds of processing objects by subclassing the `ProcessingObject` class and by providing an
 implementation for the `handleWork()` method.
 
+```java
+public class HeaderTextProcessing extends ProcessingObject<String> {
+    @Override
+    protected String handleWork(final String input) {
+        return "From Casper and Rishi: " + input;
+    }
+}
+```
+
+```java
+public class SpellChecker extends ProcessingObject<String> {
+    @Override
+    protected String handleWork(final String input) {
+        return input.replaceAll("Udemy", "Guidemy");
+    }
+}
+```
+
 To use in the client code, here is a sample:
+
+```
+        final ProcessingObject<String> p1 = new HeaderTextProcessing();
+        final ProcessingObject<String> p2 = new SpellChecker();
+        p1.setSuccessor(p2);
+        final String result = p1.handle("The Udemy classes are the best to learn technology!!");
+        System.out.println(result);
+```
+
+Output:
+
+```
+From Casper and Rishi: The Guidemy classes are the best to learn technology!!
+```
+
+We can do the same thing using lambdas as shown below:
 
 ```
         final UnaryOperator<String> headerProcessing =
