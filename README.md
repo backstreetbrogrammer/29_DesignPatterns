@@ -571,7 +571,86 @@ Consumed by PlotData for UI
 
 #### Template
 
+**(asked in Société Générale interview)**
 
+Defines the skeleton of an algorithm in a method, deferring some steps to subclasses. Template Method lets subclasses
+redefine certain steps of an algorithm without changing the algorithm's structure.
+
+In other words, the template method pattern is useful when we find ourselves saying "I’d love to use this algorithm, but
+I need to change a few lines, so it does what I want."
+
+Suppose that we need to write a simple online banking application.
+
+Users typically enter a customer ID; the application fetches the customer’s details from the bank’s database and does
+something to make the customer happy.
+
+Different online banking applications for different banking branches may have different ways of making a customer
+happy (such as adding a bonus to her account or sending her less paperwork).
+
+```java
+public class OnlineBanking {
+    public void processCustomer(final int id, final Consumer<Customer> makeCustomerHappy) {
+        final Customer customer = Database.getCustomerWithId(id);
+        makeCustomerHappy.accept(customer);
+    }
+}
+```
+
+Now we can plug in different behaviors directly without subclassing the `OnlineBanking` class by passing lambda
+expressions:
+
+```
+new OnlineBanking().processCustomer(147, (Customer c) -> 
+                     System.out.printf("Hello %s. We have special offer for you %s%n", c.getName(), bonusOffer);
+```
 
 #### Chain of responsibility
 
+The chain of responsibility pattern is a common solution to create a chain of processing objects (such as a chain of
+operations). One processing object may do some work and pass the result to another object, which also does some work and
+passes it on to yet another processing object, and so on.
+
+- Used when you want to give more than one object a chance to handle a request.
+- Each object in the chain acts as a handler and has a successor object. If it can handle the request, it does;
+  otherwise, it forwards the request to its successor.
+
+**Example code**
+
+```java
+public abstract class ProcessingObject<T> {
+    protected ProcessingObject<T> successor;
+
+    public void setSuccessor(final ProcessingObject<T> successor) {
+        this.successor = successor;
+    }
+
+    public T handle(final T input) {
+        final T r = handleWork(input);
+        if (successor != null) {
+            return successor.handle(r);
+        }
+        return r;
+    }
+
+    abstract protected T handleWork(T input);
+}
+```
+
+The abstract class `ProcessingObject` represents a processing object that defines a field to keep track of a successor.
+When it finishes its work, the processing object hands over its work to its successor.
+
+We can create different kinds of processing objects by subclassing the `ProcessingObject` class and by providing an
+implementation for the `handleWork()` method.
+
+To use in the client code, here is a sample:
+
+```
+        final UnaryOperator<String> headerProcessing =
+                (String text) -> "From Casper and Rishi: " + text;
+        final UnaryOperator<String> spellCheckerProcessing =
+                (String text) -> text.replaceAll("Udemy", "Guidemy");
+        final Function<String, String> pipeline =
+                headerProcessing.andThen(spellCheckerProcessing);
+        final String result = pipeline.apply("The Udemy classes are the best to learn technology!!");
+        assertEquals("From Casper and Rishi: The Guidemy classes are the best to learn technology!!", result);
+```
