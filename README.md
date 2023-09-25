@@ -16,18 +16,22 @@ Tools used:
     - [Singleton](https://github.com/backstreetbrogrammer/29_DesignPatterns#singleton)
     - [Builder](https://github.com/backstreetbrogrammer/29_DesignPatterns#builder)
     - [Factory](https://github.com/backstreetbrogrammer/29_DesignPatterns#factory)
+    - [Abstract Factory](https://github.com/backstreetbrogrammer/29_DesignPatterns#abstract-factory)
 3. [Structural Patterns](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-03-structural-patterns)
     - [Decorator](https://github.com/backstreetbrogrammer/29_DesignPatterns#decorator)
     - [Adapter](https://github.com/backstreetbrogrammer/29_DesignPatterns#adapter)
+    - [Flyweight](https://github.com/backstreetbrogrammer/29_DesignPatterns#flyweight)
+    - [Proxy](https://github.com/backstreetbrogrammer/29_DesignPatterns#proxy)
 4. [Behavioral Patterns](https://github.com/backstreetbrogrammer/29_DesignPatterns#chapter-04-behavioral-patterns)
     - [Strategy](https://github.com/backstreetbrogrammer/29_DesignPatterns#strategy)
     - [Observer](https://github.com/backstreetbrogrammer/29_DesignPatterns#observer)
     - [Template](https://github.com/backstreetbrogrammer/29_DesignPatterns#template)
+    - [Command](https://github.com/backstreetbrogrammer/29_DesignPatterns#command)
     - [Chain of responsibility](https://github.com/backstreetbrogrammer/29_DesignPatterns#chain-of-responsibility)
 
 ---
 
-### Chapter 01. Introduction
+## Chapter 01. Introduction
 
 Design patterns are typical solutions to common problems in software design. Each pattern is like a blueprint that we
 can customize to solve a particular design problem in our code.
@@ -42,11 +46,11 @@ categorized by their intent and divided into three groups:
 
 ---
 
-### Chapter 02. Creational Patterns
+## Chapter 02. Creational Patterns
 
 **Creational Patterns** deal with the process of creation of objects of classes.
 
-#### Singleton
+### Singleton
 
 - Ensures a class has only one instance
 - Provides a global access point to that instance
@@ -104,7 +108,7 @@ enum NaturalOrderComparator implements Comparator<Comparable<Object>> {
 }
 ```
 
-#### Builder
+### Builder
 
 Used to encapsulate the construction of a product and allow it to be constructed in steps.
 
@@ -183,17 +187,17 @@ This client code is easy to write and, more importantly, easy to read.
 The `Pizza` class is **immutable**, and all parameter default values are in one place. The builder’s setter methods
 return the builder itself so that invocations can be chained, resulting in a _fluent_ API.
 
-#### Factory
+### Factory
 
 Defines an interface for creating an object, but lets subclasses decide which class to instantiate. Factory Method lets
 a class defer instantiation to subclasses.
 
-In other words, The factory design pattern lets us create objects **without exposing the instantiation logic** to the
+In other words, the factory design pattern lets us create objects **without exposing the instantiation logic** to the
 client.
 
-Suppose that we’re working for a bank that needs a way of creating different financial products: loans, bonds, stocks,
-and so on. Typically, we’d create a Factory class with a method that’s responsible for the creation of different
-objects, as shown here:
+Suppose that we're working for a bank that needs a way of creating different financial products: loans, bonds, stocks,
+and so on. Typically, we’d create a `Factory` class with a static method that's responsible for the creation of
+different objects, as shown here:
 
 ```java
 public class ProductFactory {
@@ -221,14 +225,113 @@ the configuration to the client, which makes the creation of products simpler fo
 Product p = ProductFactory.createProduct("loan");
 ```
 
+### Abstract Factory
+
+Abstract factory creates a base class with abstract methods defining methods for the objects that should be created.
+Each factory class which derives the base class can create their own implementation of each object type.
+
+The main difference between a **Factory method** and an **Abstract Factory** is that the **Factory method** is a
+`method`, and an **Abstract Factory** is an `object`.
+
+Because the **Factory method** is just a method, it can be overridden in a subclass,
+
+> ... the Factory Method pattern uses inheritance and relies on a subclass to handle the desired object instantiation.
+
+The quote assumes that an object is calling its own factory method here. Therefore, the only thing that could change
+the return value would be a subclass.
+
+The **Abstract Factory** is an object that has multiple factory methods on it.
+
+> ... with the Abstract Factory pattern, a class delegates the responsibility of object instantiation to another object
+> via composition ...
+
+What they're saying is that there is an object `A`, who wants to make a `Foo` object. Instead of making the `Foo` object
+itself (e.g., with a **factory method**), it's going to get a different object (the **abstract factory**) to create the
+`Foo` object.
+
+**_Code Examples_**
+
+To show the difference, here is a **Factory method** in use:
+
+```java
+class A {
+    public void doSomething() {
+        final Foo foo = makeFoo();
+        foo.doSomethingElse();
+    }
+
+    protected Foo makeFoo() {
+        return new RegularFoo();
+    }
+}
+
+class B extends A {
+    protected Foo makeFoo() {
+        //subclass is overriding the factory method 
+        //to return something different
+        return new SpecialFoo();
+    }
+}
+```
+
+And here is an **Abstract Factory** in use:
+
+```java
+class A {
+    private Factory factory;
+
+    public A(Factory factory) {
+        this.factory = factory;
+    }
+
+    public void doSomething() {
+        //The concrete class of "foo" depends on the concrete class
+        //of the factory passed into the constructor. If we provide a
+        //different factory, we get a different Foo object.
+        final Foo foo = factory.makeFoo();
+        foo.doSomethingElse();
+    }
+}
+
+interface Factory {
+    Foo makeFoo();
+
+    Bar makeBar();
+
+    Aycufcn makeAmbiguousYetCommonlyUsedFakeClassName();
+}
+
+//need to make concrete factories that implement the "Factory" interface here
+```
+
+To sum up, the **Factory Method** uses `inheritance` as a design tool. Meanwhile, **Abstract Factory** uses
+`delegation`.
+
+The **Factory Method** relies on a derived class to implement, whereas the base provides expected behavior.
+Additionally, it is over-method and not over a class.
+
+On the other hand, **Abstract Factory** is applied over a class.
+
+Both follow `OCP` and `SRP`, producing a loosely coupled code and more flexibility for future changes in our codebase.
+The creation code is in one place.
+
+**When to Use Abstract Factory Pattern**
+
+- The client is independent of how we create and compose the objects in the system
+- The system consists of multiple families of objects, and these families are designed to be used together
+- We need a run-time value to construct a particular dependency
+
+While the pattern is great when creating predefined objects, adding the new ones might be challenging. To support the
+new type of objects will require changing the `AbstractFactory` class and all of its subclasses.
+
 ---
 
-### Chapter 03. Structural Patterns
+## Chapter 03. Structural Patterns
 
 The Structural Patterns explain how to assemble objects and classes into larger structures, while keeping these
 structures flexible and efficient, e.g. Adapter and Decorator.
 
-#### Decorator
+### Decorator
 
 A Decorator pattern can be used to attach additional responsibilities to an object either statically or dynamically.
 Decorators provide a flexible alternative to sub-classing for extending functionality.
@@ -348,7 +451,7 @@ Note that in the first `pizza1` object, we're only decorating it with `Pepperoni
 we're decorating with `Bacon`, `Cheese` and `Pepperoni`. This pattern gives us this flexibility to add as many
 decorators as we want at runtime.
 
-#### Adapter
+### Adapter
 
 An Adapter pattern acts as a connector between two incompatible interfaces that otherwise cannot be connected directly.
 
@@ -406,13 +509,173 @@ public interface Enumeration<E> {
 }
 ```
 
+### Flyweight
+
+Flyweight pattern is based on a factory which recycles created objects by storing them after creation.
+
+Each time an object is requested, the factory looks up the object in order to check if it’s already been created. If it
+has, the
+existing object is returned – otherwise, a new one is created, stored and then returned.
+
+The flyweight object’s state is made up of an invariant component shared with other similar objects (**intrinsic**) and
+a
+variant component which can be manipulated by the client code (**extrinsic**).
+
+It’s very important that the flyweight objects are **immutable**: any operation on the state must be performed by the
+factory.
+
+This pattern is used to reduce the memory footprint. It can also improve performance in applications where object
+instantiation is expensive.
+
+The main elements of the pattern are:
+
+- an interface which defines the operations that the client code can perform on the flyweight object
+- one or more concrete implementations of our interface
+- a factory to handle objects instantiation and caching
+
+**Example**
+
+We'll create a `Computer` interface. Since this interface will be the return type of the factory method we
+need to make sure to expose all the relevant methods:
+
+```
+public void start();
+public void shutDown();
+public OperatingSystem getOperatingSystem();
+```
+
+Next up, let’s make a `DellComputer` class with Windows OS as a concrete `Computer`. Our Dell computer will implement
+all the
+methods of the `Computer` interface.
+
+As for its state, it'll have a **monitor**, a **keyboard** and an `OperatingSystem` field:
+
+```
+private Monitor monitor;
+private Keyboard keyboard;
+private OperatingSystem operatingSystem;
+```
+
+Now, we'll create the `ComputerFactory`. Building a new computer is a very expensive operation so the factory will only
+create one computer per operating system.
+
+In order to do that, we keep track of the created computers using a map as a simple cache:
+
+```
+private static Map<OperatingSystem, Computer> computersCache = new HashMap<>();
+
+public static Computer createComputer(final OperatingSystem os) {
+    final Computer newComputer = computersCache.computeIfAbsent(os, newOperatingSystem -> { 
+        final Monitor newMonitor = new Monitor();
+        final Keyboard newKeyboard = new Keyboard();
+        return new DellComputer(newMonitor, newKeyboard, newOperatingSystem);
+    });
+    return newComputer;
+}
+```
+
+Notice how the client code can only affect the **extrinsic** state of the object (the `OperatingSystem` of our computer)
+passing it as an argument to the `createComputer()` method.
+
+Many modern applications use caches to improve response time. The flyweight pattern is similar to the core concept of a
+cache and can fit this purpose well.
+
+Of course, there are a few key differences in complexity and implementation between this pattern and a typical,
+general-purpose cache.
+
+### Proxy
+
+Proxy pattern allows us to create an intermediary that acts as an interface to another resource, while also hiding the
+underlying complexity of the component.
+
+Consider a heavy Java object that requires some initial configuration.
+
+We only want such objects to be initialized **on demand**, and once they are, we’d want to reuse them for all calls.
+
+```java
+public interface DatabaseConnection {
+    void process();
+}
+```
+
+Implementation of this interface with a heavy initial configuration:
+
+```java
+public class DatabaseConnectionImpl implements DatabaseConnection {
+
+    public DatabaseConnectionImpl() {
+        heavyInitialConfiguration();
+    }
+
+    @Override
+    public void process() {
+        System.out.println("processing complete.");
+    }
+
+    private void heavyInitialConfiguration() {
+        System.out.println("Loading initial configuration...");
+    }
+
+}
+```
+
+We’ll now utilize the `Proxy` pattern and initialize our object on demand:
+
+```java
+public class DatabaseConnectionProxy implements DatabaseConnection {
+    private static DatabaseConnection object;
+
+    @Override
+    public void process() {
+        if (object == null) {
+            object = new DatabaseConnectionImpl();
+        }
+        object.process();
+    }
+}
+```
+
+Whenever our client calls the `process()` method, they’ll just get to see the processing and the initial configuration
+will always remain hidden:
+
+```
+public static void main(String[] args) {
+    DatabaseConnection object = new DatabaseConnectionProxy();
+    object.process();
+    object.process();
+}
+```
+
+Note that we’re calling the `process()` method twice. Behind the scenes, the settings part will occur only once – when
+the object is first initialized.
+
+For every other subsequent call, this pattern will skip the initial configuration, and only processing will occur:
+
+```
+Loading initial configuration...
+processing complete.
+processing complete.
+```
+
+**When to use the Proxy pattern**
+
+- When we want a simplified version of a complex or heavy object. In this case, we may represent it with a skeleton
+  object which loads the original object on demand, also called as **lazy initialization**. This is known as the
+  **Virtual Proxy**.
+- When the original object is present in different address space, and we want to represent it locally. We can create a
+  proxy which does all the necessary boilerplate stuff like creating and maintaining the connection, encoding, decoding,
+  etc., while the client accesses it as it was present in their local address space. This is called the
+  **Remote Proxy**.
+- When we want to add a layer of security to the original underlying object to provide controlled access based on access
+  rights of the client. This is called **Protection Proxy**.
+
 ---
 
-### Chapter 04. Behavioral Patterns
+## Chapter 04. Behavioral Patterns
 
 Behavioral design patterns are concerned with algorithms and the assignment of responsibilities between objects.
 
-#### Strategy
+### Strategy
 
 The strategy pattern is a common solution for representing a family of algorithms and letting us choose among them at
 runtime. We can apply this pattern to a multitude of scenarios, such as validating an input with different criteria,
@@ -457,7 +720,7 @@ We can use different validation strategies in our program.
         assertTrue(lowerCaseValidator.isValid("backstreetbrogrammer"));
 ```
 
-#### Observer
+### Observer
 
 Defines a one-to-many dependency between objects so that when one object changes state, all of its dependents are
 notified and updated automatically.
@@ -569,7 +832,7 @@ Consumed by RealTimeAnalytics
 Consumed by PlotData for UI
 ```
 
-#### Template
+### Template
 
 **(asked in Société Générale interview)**
 
@@ -604,7 +867,135 @@ new OnlineBanking().processCustomer(147, (Customer c) ->
                      System.out.printf("Hello %s. We have special offer for you %s%n", c.getName(), bonusOffer);
 ```
 
-#### Chain of responsibility
+### Command
+
+Command pattern intends to encapsulate in an object all the data required for performing a given action (command),
+including what method to call, the method’s arguments, and the object to which the method belongs.
+
+This model allows us to decouple objects that produce the commands from their consumers.
+
+In a classic implementation, the command pattern requires implementing four components:
+
+- Command
+- Receiver
+- Invoker
+- Client
+
+**_Command_**
+
+Let’s start developing a simple command layer which includes just one single interface and two implementations:
+
+```java
+
+@FunctionalInterface
+public interface OrderOperation {
+    OrderStatus execute();
+}
+```
+
+**Open order**
+
+```java
+public class OpenOrderOperation implements OrderOperation {
+
+    private Order order;
+
+    // constructors
+
+    @Override
+    public OrderStatus execute() {
+        return order.open();
+    }
+}
+```
+
+**Save order**
+
+```java
+public class SaveOrderOperation implements OrderOperation {
+
+    private Order order;
+
+    // constructors
+
+    @Override
+    public OrderStatus execute() {
+        return order.save();
+    }
+}
+```
+
+`OrderOperation` interface defines the command objects’ API, and the two implementations, `OpenOrderOperation` and
+`SaveOrderOperation`, perform the concrete actions.
+
+The `OrderOperation` commands encapsulate all the information required for opening and saving an order,
+including the receiver object, the methods to call, and the arguments (in this case, no arguments are required, but they
+could be).
+
+The component that performs the order operations is the receiver (the `Order` instance).
+
+**_Receiver_**
+
+Order class:
+
+```java
+public class Order {
+
+    private String orderId;
+    private OrderStatus orderStatus;
+
+    // constructor
+
+    public OrderStatus open() {
+        System.out.println("Opening order " + orderId);
+        return OrderStatus.OPEN;
+    }
+
+    public OrderStatus save() {
+        System.out.println("Saving order " + orderId);
+        return OrderStatus.SAVE;
+    }
+
+    // additional order methods (cancel, amend, execute, etc.)
+}
+```
+
+**_Invoker_**
+
+An invoker is an object that knows how to execute a given command but doesn't know how the command has been implemented.
+It only knows the command’s interface.
+
+In our example, it becomes evident that there must be an additional component responsible for invoking the command
+objects and executing them through the commands’ `execute()` method. This is exactly where the invoker class comes into
+play.
+
+```java
+public class OrderOperationExecutor {
+
+    private final List<OrderOperation> orderOperations
+            = new ArrayList<>();
+
+    public OrderStatus executeOperation(final OrderOperation orderOperation) {
+        orderOperations.add(orderOperation);
+        return orderOperation.execute();
+    }
+}
+```
+
+**_Client_**
+
+A client is an object that controls the command execution process by specifying what commands to execute and at what
+stages of the process to execute them.
+
+```
+final OrderOperationExecutor orderOperationExecutor = new OrderOperationExecutor();
+final Order order = new Order("order1", "IBM",...);
+
+final OrderStatus openStatus = orderOperationExecutor.executeOperation(order::open);
+final OrderStatus saveStatus = orderOperationExecutor.executeOperation(order::save);
+```
+
+### Chain of responsibility
 
 The chain of responsibility pattern is a common solution to create a chain of processing objects (such as a chain of
 operations). One processing object may do some work and pass the result to another object, which also does some work and
